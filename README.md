@@ -72,7 +72,7 @@ python run.py --selftest     # 以範例影像核對四個分析模組的已知�
 python -m pytest             # 執行全部測試
 ```
 
-推送 `v` 開頭的標籤（例如 `v1.0.1`）到 GitHub，`.github/workflows/build.yml` 會自動在 Mac、Windows、Linux 上測試、打包，並發布新的下載頁。版本號請同步修改 `oris/__init__.py`、`oris.spec` 與 workflow 中的 `ORIS_VERSION`。
+每次推送到 main，`.github/workflows/build.yml` 會自動在 Mac、Windows、Linux 上測試、打包，並更新下載頁。要發布新版本，請同步提高 `oris/__init__.py`、`oris.spec` 與 workflow 中的 `ORIS_VERSION`。
 
 ## 五分鐘上手
 
@@ -169,7 +169,7 @@ ORIS is a desktop application that re-implements the most-used ImageJ workflows 
 
 **What it does not cover** — It is independent software, not a complete replacement for ImageJ/Fiji. There is no support for proprietary microscope formats (CZI, LIF, ND2 … export to TIFF first), ImageJ plugins or `.ijm` macros, 3D/4D visualisation, tracking, stitching, deconvolution, virtual stacks, or ImageJ `.roi` files. Area and intensity measurements follow the ImageJ definitions exactly; shape descriptors (perimeter, circularity, Feret) will differ somewhat because the algorithms differ (the size of the difference has not been measured against ImageJ). Cross-check against your existing pipeline on representative images before relying on it for publication.
 
-**Download** — installers for Mac (Apple Silicon and Intel), Windows and Linux are on the [Releases page](../../releases/latest); no Python needed. The apps are not yet code-signed, so macOS asks once for *System Settings ▸ Privacy & Security ▸ Open Anyway* and Windows SmartScreen for *More info ▸ Run anyway*. Developers: `pip install -r requirements.txt && python run.py`; pushing a `v*` tag rebuilds and republishes the installers.
+**Download** — installers for Mac (Apple Silicon and Intel), Windows and Linux are on the [Releases page](../../releases/latest); no Python needed. The apps are not yet code-signed, so macOS asks once for *System Settings ▸ Privacy & Security ▸ Open Anyway* and Windows SmartScreen for *More info ▸ Run anyway*. Developers: `pip install -r requirements.txt && python run.py`; every push to main rebuilds and republishes the installers.
 
 **Languages** — switch from the *Language* menu or the selector on the welcome screen. To add a language, copy `oris/locales/en.json` to `<code>.json`, translate the values and restart; missing entries fall back to English. `python tests/check_locales.py` checks completeness. The Japanese, Korean, Spanish, French and German files were machine-authored and have not been reviewed by native speakers.
 
