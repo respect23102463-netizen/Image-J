@@ -6,9 +6,9 @@ import sys
 import traceback
 
 import numpy as np
-from PySide6.QtCore import QLocale, QSettings, Qt
+from PySide6.QtCore import QLocale, QSettings, QSize, Qt
 from PySide6.QtGui import QAction, QActionGroup, QKeySequence
-from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDockWidget, QFileDialog, QHBoxLayout, QLabel,
+from PySide6.QtWidgets import (QApplication, QButtonGroup, QSizePolicy, QToolButton, QCheckBox, QComboBox, QDockWidget, QFileDialog, QHBoxLayout, QLabel,
                                QMainWindow, QMenu, QMessageBox, QSlider, QStackedWidget, QTabWidget, QToolBar,
                                QVBoxLayout, QWidget)
 
@@ -132,6 +132,71 @@ class ImageView(QWidget, Tr):
         self.win.view_changed()
 
 
+class ModuleTabs(QWidget):
+    """Analysis modules: a row of icon buttons above the panels. Never truncates or scrolls, in any language."""
+
+    ICONS = ["roi", "gel", "cells", "fluor", "wound"]
+
+    def __init__(self):
+        super().__init__()
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(0, 0, 0, 0)
+        lay.setSpacing(0)
+        self.bar = QWidget()
+        self.bar.setProperty("role", "modulebar")
+        self.row = QHBoxLayout(self.bar)
+        self.row.setContentsMargins(4, 2, 4, 0)
+        self.row.setSpacing(0)
+        self.stack = QStackedWidget()
+        lay.addWidget(self.bar)
+        lay.addWidget(self.stack, 1)
+        self.group = QButtonGroup(self)
+        self.group.setExclusive(True)
+        self.group.idClicked.connect(self.setCurrentIndex)
+        self.buttons = []
+
+    def addTab(self, widget, text):
+        i = len(self.buttons)
+        b = QToolButton()
+        b.setCheckable(True)
+        b.setProperty("role", "module")
+        b.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        b.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        b.setMinimumWidth(10)
+        b.setText(text)
+        self.group.addButton(b, i)
+        self.row.addWidget(b, 1)
+        self.buttons.append(b)
+        self.stack.addWidget(widget)
+        if i == 0:
+            b.setChecked(True)
+        self.restyle()
+
+    def restyle(self):
+        for i, b in enumerate(self.buttons):
+            b.setIcon(theme.module_icon(self.ICONS[i % len(self.ICONS)],
+                                        color=theme.C["accent"] if b.isChecked() else theme.C["muted"]))
+            b.setIconSize(QSize(22, 22))
+
+    def setTabText(self, i, text):
+        self.buttons[i].setText(text)
+        self.buttons[i].setToolTip(text)
+
+    def setCurrentIndex(self, i):
+        self.buttons[i].setChecked(True)
+        self.stack.setCurrentIndex(i)
+        self.restyle()
+
+    def currentIndex(self):
+        return self.stack.currentIndex()
+
+    def count(self):
+        return len(self.buttons)
+
+    def widget(self, i):
+        return self.stack.widget(i)
+
+
 class MainWindow(QMainWindow, Tr):
     def __init__(self):
         super().__init__()
@@ -183,14 +248,16 @@ class MainWindow(QMainWindow, Tr):
         self.cell_panel, self.fluor_panel, self.wound_panel = CellPanel(self), FluorPanel(self), WoundPanel(self)
         self.panels = [("panel.roi", self.roi_panel), ("panel.gel", self.gel_panel), ("panel.cells", self.cell_panel),
                        ("panel.fluor", self.fluor_panel), ("panel.wound", self.wound_panel)]
-        self.side_tabs = QTabWidget()
-        self.side_tabs.setUsesScrollButtons(True)
+        for _, p in self.panels:
+            p.fit_width()
+        self.side_tabs = ModuleTabs()
         for key, p in self.panels:
-            self.side_tabs.addTab(p, tr(key))
+            self.side_tabs.addTab(p, tr("tab." + key.split(".")[1]))
         self.side_dock = QDockWidget()
         self.side_dock.setObjectName("side")
         self.side_dock.setWidget(self.side_tabs)
-        self.side_dock.setMinimumWidth(360)
+        self.side_dock.setMinimumWidth(340)
+        self.side_dock.setTitleBarWidget(QWidget())
         self.side_dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
         self.addDockWidget(Qt.RightDockWidgetArea, self.side_dock)
 
@@ -201,10 +268,11 @@ class MainWindow(QMainWindow, Tr):
         self.bottom_dock = QDockWidget()
         self.bottom_dock.setObjectName("bottom")
         self.bottom_dock.setWidget(self.bottom_tabs)
+        self.bottom_dock.setTitleBarWidget(QWidget())
         self.bottom_dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.bottom_dock)
         self.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)
-        self.resizeDocks([self.bottom_dock], [250], Qt.Vertical)
+        self.resizeDocks([self.bottom_dock], [200], Qt.Vertical)
         self.resizeDocks([self.side_dock], [430], Qt.Horizontal)
 
         self.pos_label, self.info_label = QLabel(), QLabel()
@@ -425,7 +493,7 @@ class MainWindow(QMainWindow, Tr):
             a.setText(tr("tool." + name))
             a.setToolTip(f"{tr('tool.' + name)}  [{TOOL_KEYS[name]}]\n{tr('tooltip.' + name)}")
         for i, (key, p) in enumerate(self.panels):
-            self.side_tabs.setTabText(i, tr(key))
+            self.side_tabs.setTabText(i, tr("tab." + key.split(".")[1]))
             p.retranslate()
         self.bottom_tabs.setTabText(0, tr("panel.results"))
         self.bottom_tabs.setTabText(1, tr("panel.recorder"))
@@ -459,6 +527,7 @@ class MainWindow(QMainWindow, Tr):
         theme.apply_theme(QApplication.instance(), name)
         for a_name, a in self.tool_actions.items():
             a.setIcon(theme.tool_icon(a_name))
+        self.side_tabs.restyle()
         self.refresh_all()
         for w in self.findChildren(QWidget):
             w.update()

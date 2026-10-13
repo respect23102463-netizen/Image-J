@@ -7,7 +7,7 @@ import numpy as np
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFileDialog, QFormLayout, QGridLayout, QGroupBox,
                                QHBoxLayout, QInputDialog, QLabel, QLineEdit, QListWidget, QPlainTextEdit, QScrollArea,
-                               QTableView, QToolButton, QVBoxLayout, QWidget)
+                               QTableView, QToolButton, QVBoxLayout, QWidget, QAbstractSpinBox)
 
 from ..core import analysis as an
 from ..core.filters import THRESHOLD_METHODS
@@ -71,6 +71,24 @@ class Panel(QWidget, Tr):
 
     def refresh(self):
         pass
+
+    def fit_width(self):
+        """Let the panel shrink to the dock width in every language: long labels wrap above their field,
+        and input fields are allowed to become narrower than their longest entry."""
+        for form in self.findChildren(QFormLayout):
+            form.setRowWrapPolicy(QFormLayout.WrapLongRows)
+            form.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+        for c in self.findChildren(QComboBox):
+            c.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon)
+            c.setMinimumContentsLength(4)
+            c.setMinimumWidth(80)
+        for sb in self.findChildren(QAbstractSpinBox):
+            sb.setMinimumWidth(80)
+        for lab in self.findChildren(QLabel):
+            if lab.property("role") == "hint":
+                lab.setWordWrap(True)
+        for g in self.findChildren(QGroupBox):
+            g.setMinimumWidth(0)
 
 
 # ---------------------------------------------------------------------------
@@ -233,6 +251,7 @@ class GelPanel(Panel):
         self.form_row(form, "param.control", self.control)
 
         self.plot = PlotWidget(min_height=170)
+        self.plot.setMaximumHeight(240)
         self.col.addWidget(self.plot)
         self.band_info = QLabel()
         self.band_info.setProperty("role", "hint")
@@ -354,9 +373,10 @@ class CellPanel(Panel):
         super().__init__(win)
         self.col.addWidget(self.label("cells.hint", "hint", True))
         self.col.addWidget(self.button("cells.count", self.count, True))
-        self.result = QLabel("–")
+        self.result = QLabel("")
         self.result.setProperty("role", "big")
         self.result.setAlignment(Qt.AlignCenter)
+        self.result.setVisible(False)          # shown once there is a result
         self.col.addWidget(self.result)
         form = self.advanced()
         self.sigma = self.form_row(form, "param.sigma", dspin(1.5, 0.0, 50.0, step=0.5, decimals=1))
@@ -391,10 +411,8 @@ class CellPanel(Panel):
         self.counts = QLabel()
         self.counts.setWordWrap(True)
         v.addWidget(self.counts)
-        row = QHBoxLayout()
-        row.addWidget(self.button("cells.start", lambda: win.set_tool("point")))
-        row.addWidget(self.button("cells.to_results", self.to_results))
-        v.addLayout(row)
+        v.addWidget(self.button("cells.start", lambda: win.set_tool("point")))
+        v.addWidget(self.button("cells.to_results", self.to_results))
         self.col.addStretch(1)
         self._category_names()
 
@@ -446,6 +464,7 @@ class CellPanel(Panel):
             add_to_manager=self.to_manager.isChecked(), all_frames=self.all_frames.isChecked())
         if r:
             self.result.setText(str(r["count"]))
+            self.result.setVisible(True)
 
 
 # ---------------------------------------------------------------------------
@@ -475,6 +494,7 @@ class FluorPanel(Panel):
         v.addLayout(form)
         v.addWidget(self.button("coloc.analyze", self.analyze, True))
         self.plot = PlotWidget(min_height=210)
+        self.plot.setMaximumHeight(240)
         v.addWidget(self.plot)
         self.stats = QLabel()
         self.stats.setWordWrap(True)
@@ -532,11 +552,13 @@ class WoundPanel(Panel):
         super().__init__(win)
         self.col.addWidget(self.label("wound.hint", "hint", True))
         self.col.addWidget(self.button("wound.measure", self.measure, True))
-        self.result = QLabel("–")
+        self.result = QLabel("")
         self.result.setProperty("role", "big")
         self.result.setAlignment(Qt.AlignCenter)
+        self.result.setVisible(False)          # shown once there is a result
         self.col.addWidget(self.result)
         self.plot = PlotWidget(min_height=180)
+        self.plot.setMaximumHeight(240)
         self.col.addWidget(self.plot)
         form = self.advanced()
         self.radius = self.form_row(form, "param.radius", spin(8, 2, 100))
@@ -565,6 +587,7 @@ class WoundPanel(Panel):
         doc = self.win.doc()
         cur = next((r for r in rows if r["Frame"] == doc.frame + 1), rows[0])
         self.result.setText(f"{cur['%Area']:.1f}%")
+        self.result.setVisible(True)
         if len(rows) > 1:
             self.plot.set_data([{"x": [r["Frame"] for r in rows], "y": [r["Closure %"] for r in rows], "fill": True}],
                                xlabel=tr("wound.frame"), ylabel=tr("wound.closure"))

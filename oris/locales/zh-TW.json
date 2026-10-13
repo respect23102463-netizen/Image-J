@@ -456,5 +456,10 @@
   "err.open": "無法開啟「{path}」。\n{msg}",
   "err.save": "無法儲存檔案。\n{msg}",
   "err.failed": "操作失敗。\n{msg}",
-  "panel.advanced": "進階設定"
+  "panel.advanced": "進階設定",
+  "tab.roi": "ROI",
+  "tab.gel": "條帶",
+  "tab.cells": "細胞計數",
+  "tab.fluor": "螢光",
+  "tab.wound": "傷口癒合"
 }

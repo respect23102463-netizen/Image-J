@@ -456,5 +456,10 @@
   "err.open": "「{path}」を開けませんでした。\n{msg}",
   "err.save": "ファイルを保存できませんでした。\n{msg}",
   "err.failed": "操作に失敗しました。\n{msg}",
-  "panel.advanced": "詳細設定"
+  "panel.advanced": "詳細設定",
+  "tab.roi": "ROI",
+  "tab.gel": "ブロット",
+  "tab.cells": "細胞数",
+  "tab.fluor": "蛍光",
+  "tab.wound": "創傷治癒"
 }

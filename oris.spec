@@ -2,7 +2,7 @@
 import sys
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 datas = [("oris/locales", "oris/locales")] + collect_data_files("skimage")
 hidden = collect_submodules("skimage") + ["scipy.special.cython_special"]
 excludes = ["matplotlib", "tkinter", "PyQt5", "PyQt6", "IPython", "pytest", "pandas",

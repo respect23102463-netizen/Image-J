@@ -456,5 +456,10 @@
   "err.open": "“{path}”을(를) 열 수 없습니다.\n{msg}",
   "err.save": "파일을 저장할 수 없습니다.\n{msg}",
   "err.failed": "작업에 실패했습니다.\n{msg}",
-  "panel.advanced": "고급 설정"
+  "panel.advanced": "고급 설정",
+  "tab.roi": "ROI",
+  "tab.gel": "블롯",
+  "tab.cells": "세포 계수",
+  "tab.fluor": "형광",
+  "tab.wound": "상처 치유"
 }

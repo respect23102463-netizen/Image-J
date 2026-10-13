@@ -38,6 +38,7 @@ def used_keys():
         keys.update({"tool." + t, "tooltip." + t})
     keys.update("kind." + k for k in ("rect", "ellipse", "polygon", "freehand", "line", "point"))
     keys.update("panel." + k for k in ("roi", "gel", "cells", "fluor", "wound", "results", "recorder"))
+    keys.update("tab." + k for k in ("roi", "gel", "cells", "fluor", "wound"))
     keys.update({"theme.dark", "theme.light", "help.html", "choice.none", "choice.manual"})
     for pre, vals in (("choice.bands_", ("auto", "dark", "light")), ("choice.bg_", ("auto", "roi", "value")),
                       ("choice.thr_", ("costes", "otsu", "manual", "none"))):

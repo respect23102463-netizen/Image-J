@@ -4,7 +4,7 @@ from __future__ import annotations
 import math
 
 import numpy as np
-from PySide6.QtCore import QPointF, QRectF, Qt, Signal
+from PySide6.QtCore import QEvent, QPointF, QRectF, Qt, Signal
 from PySide6.QtGui import QColor, QFont, QImage, QPainter, QPen, QPixmap, QPolygonF
 from PySide6.QtWidgets import QGraphicsScene, QGraphicsView
 from skimage import measure as skm, segmentation
@@ -190,6 +190,7 @@ class Canvas(QGraphicsView):
         self.setAcceptDrops(False)      # let the main window receive dropped files
         self.setBackgroundBrush(QColor(C["canvas"]))
         self._fitted = False
+        self._follow = True
         self.refresh()
 
     # ---- display ------------------------------------------------------
@@ -225,7 +226,9 @@ class Canvas(QGraphicsView):
         self.pix.setTransformationMode(mode)
         self.ovl.setTransformationMode(Qt.FastTransformation)
 
-    def set_zoom(self, z, anchor_center=True):
+    def set_zoom(self, z, anchor_center=True, user=True):
+        if user:
+            self._follow = False        # the user chose a zoom: stop re-fitting on window resize
         z = max(0.02, min(64.0, z))
         if anchor_center:
             self.setTransformationAnchor(QGraphicsView.AnchorViewCenter)
@@ -238,19 +241,27 @@ class Canvas(QGraphicsView):
     def fit(self):
         vw, vh = self.viewport().width() - 8, self.viewport().height() - 8
         if vw > 10 and vh > 10:
-            self.set_zoom(min(vw / self.doc.W, vh / self.doc.H, 8.0))
+            self.set_zoom(min(vw / self.doc.W, vh / self.doc.H, 8.0), user=False)
             self.centerOn(self.doc.W / 2, self.doc.H / 2)
             self._fitted = True
+            self._follow = True
 
     def resizeEvent(self, e):
         super().resizeEvent(e)
-        if not self._fitted:
+        if not self._fitted or self._follow:
             self.fit()
 
     def showEvent(self, e):
         super().showEvent(e)
-        if not self._fitted:
+        if not self._fitted or self._follow:
             self.fit()
+
+    def viewportEvent(self, e):
+        # trackpad pinch (macOS) zooms around the fingers
+        if e.type() == QEvent.NativeGesture and e.gestureType() == Qt.ZoomNativeGesture:
+            self.set_zoom(self.zoom() * (1.0 + e.value()), anchor_center=False)
+            return True
+        return super().viewportEvent(e)
 
     def drawForeground(self, painter, rect):
         painter.save()
@@ -289,6 +300,13 @@ class Canvas(QGraphicsView):
 
     # ---- mouse --------------------------------------------------------
     def wheelEvent(self, e):
+        # a mouse wheel (or Ctrl/Cmd + scroll) zooms; two-finger trackpad scrolling pans, as in other Mac apps
+        pixel = e.pixelDelta()
+        if not pixel.isNull() and not (e.modifiers() & (Qt.ControlModifier | Qt.MetaModifier)):
+            self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - pixel.x())
+            self.verticalScrollBar().setValue(self.verticalScrollBar().value() - pixel.y())
+            self._follow = False
+            return
         steps = e.angleDelta().y() / 120.0
         if steps:
             self.set_zoom(self.zoom() * (1.25 ** steps), anchor_center=False)

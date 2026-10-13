@@ -456,5 +456,10 @@
   "err.open": "„{path}“ konnte nicht geöffnet werden.\n{msg}",
   "err.save": "Die Datei konnte nicht gespeichert werden.\n{msg}",
   "err.failed": "Der Vorgang ist fehlgeschlagen.\n{msg}",
-  "panel.advanced": "Erweiterte Einstellungen"
+  "panel.advanced": "Erweiterte Einstellungen",
+  "tab.roi": "ROI",
+  "tab.gel": "Blot",
+  "tab.cells": "Zellen",
+  "tab.fluor": "Fluor.",
+  "tab.wound": "Wunde"
 }

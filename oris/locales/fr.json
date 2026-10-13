@@ -456,5 +456,10 @@
   "err.open": "Impossible d’ouvrir « {path} ».\n{msg}",
   "err.save": "Impossible d’enregistrer le fichier.\n{msg}",
   "err.failed": "L’opération a échoué.\n{msg}",
-  "panel.advanced": "Réglages avancés"
+  "panel.advanced": "Réglages avancés",
+  "tab.roi": "ROI",
+  "tab.gel": "Blot",
+  "tab.cells": "Cellules",
+  "tab.fluor": "Fluo.",
+  "tab.wound": "Plaie"
 }

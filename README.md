@@ -2,7 +2,7 @@
 
 多國語言的生命科學影像分析軟體｜A multilingual image-analysis application for the life sciences
 
-**版本 1.0.0** · Mac / Windows / Linux · 介面語言：繁體中文、English、日本語、한국어、Español、Français、Deutsch
+**版本 1.0.1** · Mac / Windows / Linux · 介面語言：繁體中文、English、日本語、한국어、Español、Français、Deutsch
 
 ## ⬇️ 下載 Download
 

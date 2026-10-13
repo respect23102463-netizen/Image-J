@@ -456,5 +456,10 @@
   "err.open": "No se pudo abrir «{path}».\n{msg}",
   "err.save": "No se pudo guardar el archivo.\n{msg}",
   "err.failed": "La operación ha fallado.\n{msg}",
-  "panel.advanced": "Ajustes avanzados"
+  "panel.advanced": "Ajustes avanzados",
+  "tab.roi": "ROI",
+  "tab.gel": "Blot",
+  "tab.cells": "Células",
+  "tab.fluor": "Fluor.",
+  "tab.wound": "Herida"
 }

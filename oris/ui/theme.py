@@ -96,6 +96,11 @@ QProgressBar::chunk { background: @accent; border-radius: 4px; }
 QToolTip { background: @panel2; color: @text; border: 1px solid @border; padding: 4px 6px; }
 QScrollArea { border: none; }
 QLabel[role="hint"] { color: @muted; }
+QToolButton[role="module"] { border: none; border-bottom: 2px solid transparent; border-radius: 0; padding: 6px 2px 5px 2px;
+    color: @muted; font-size: 12px; }
+QToolButton[role="module"]:hover { color: @text; background: transparent; }
+QToolButton[role="module"]:checked { color: @accent; border-bottom: 2px solid @accent; background: transparent; font-weight: 600; }
+QWidget[role="modulebar"] { border-bottom: 1px solid @border; }
 QToolButton[role="disclosure"] { color: @muted; border: none; padding: 4px 0; }
 QToolButton[role="disclosure"]:hover { color: @text; background: transparent; }
 QToolButton[role="disclosure"]:checked { background: transparent; color: @text; }
@@ -209,6 +214,48 @@ def tool_icon(name, size=26):
     elif name == "zoom":
         p.drawEllipse(QPointF(.43 * s, .43 * s), .24 * s, .24 * s)
         p.drawLine(QPointF(.61 * s, .61 * s), QPointF(.84 * s, .84 * s))
+    p.end()
+    return QIcon(pm)
+
+
+def module_icon(name, size=22, color=None):
+    """Icons for the analysis module bar."""
+    pm = QPixmap(size * 2, size * 2)
+    pm.setDevicePixelRatio(2.0)
+    pm.fill(Qt.transparent)
+    p = QPainter(pm)
+    p.setRenderHint(QPainter.Antialiasing)
+    pen = QPen(QColor(color or C["muted"]), 1.6)
+    pen.setCapStyle(Qt.RoundCap)
+    pen.setJoinStyle(Qt.RoundJoin)
+    p.setPen(pen)
+    s = float(size)
+    if name == "roi":
+        p.drawRect(QRectF(.18 * s, .25 * s, .64 * s, .5 * s))
+        for i in range(4):
+            x = .3 * s + i * .13 * s
+            p.drawLine(QPointF(x, .75 * s), QPointF(x, (.62 if i % 2 else .55) * s))
+    elif name == "gel":
+        p.drawRoundedRect(QRectF(.12 * s, .2 * s, .76 * s, .6 * s), 2, 2)
+        pen.setWidthF(2.6)
+        p.setPen(pen)
+        for row in (.4, .62):
+            for i in range(3):
+                x = .24 * s + i * .2 * s
+                p.drawLine(QPointF(x, row * s), QPointF(x + .1 * s, row * s))
+    elif name == "cells":
+        for cx, cy, r in ((.36, .4, .17), (.67, .36, .13), (.58, .68, .17)):
+            p.drawEllipse(QPointF(cx * s, cy * s), r * s, r * s)
+    elif name == "fluor":
+        p.drawEllipse(QPointF(.4 * s, .5 * s), .24 * s, .24 * s)
+        p.drawEllipse(QPointF(.6 * s, .5 * s), .24 * s, .24 * s)
+    else:
+        p.drawLine(QPointF(.18 * s, .18 * s), QPointF(.18 * s, .82 * s))
+        p.drawLine(QPointF(.82 * s, .18 * s), QPointF(.82 * s, .82 * s))
+        pen.setStyle(Qt.DotLine)
+        p.setPen(pen)
+        p.drawLine(QPointF(.38 * s, .18 * s), QPointF(.38 * s, .82 * s))
+        p.drawLine(QPointF(.62 * s, .18 * s), QPointF(.62 * s, .82 * s))
     p.end()
     return QIcon(pm)
 
